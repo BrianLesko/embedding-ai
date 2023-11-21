@@ -16,10 +16,11 @@ api_key = openai_api_key
 client = OpenAI(api_key = api_key)
 gui = gui()
 
-def get_embedding(text, model="text-embedding-ada-002"):
-   text = text.replace("\n", " ")
-   response = client.embeddings.create(input = text, model=model)['data'][0]['embedding']
-   return response
+def get_embedding(text, model="text-embedding-ada-002",encoding_format="float"):
+    text = text.replace("\n", " ")
+    response = client.embeddings.create(input = text, model=model)
+    #st.write(response.data[0].embedding) # Debug : why the hell did OpenAI structure it like this? 
+    return response.data[0].embedding
 
 @st.cache_resource
 def tokenize(text):
@@ -108,7 +109,7 @@ def main():
     gui.clean_format()
     with st.sidebar:
         gui.about(text="This code implements text embedding, check it out!")
-    gui.display_existing_messages(intro = "Type in the chat box to embed some text")
+    gui.display_existing_messages(intro = "Hi, I'm going to help you understand what an embedding is - and why it's useful. Let's get started by entering some text to embed.")
     text = st.chat_input("Write a message")
     if text:
         doc = document("User Input", text) # document class defined above
@@ -123,10 +124,10 @@ def main():
         with st.chat_message("assistant"):
             st.markdown(f"""
                 Here's why it's useful
-                - Text embedding is useful for searching through documents.
-                - It's also useful for comparing the similarity of two pieces of text.
-                - It's also useful for text generation like ChatGPT
-                """)
+                - Searching through documents.
+                - Comparing the similarity of two pieces of text.
+                - Text generation - think ChatGPT.
+                """) 
         with st.chat_message("assistant"):
             length = np.array(doc.embedding).shape
             st.markdown(f"""
@@ -149,7 +150,7 @@ def main():
             st.session_state.baseball_similarities.append(baseball_similarity)
             st.session_state.football_similarities.append(football_similarity)  
             st.markdown(f"""
-                Write something and well compare it to a short description of baseball and to a short description of football.
+                For example, even though all this text is hard coded, I can tell you if your text input is more simialar to baseball or football.
                 """)
             # plot a 2d plot of the similarity between baseball on the X and the similarity to soccer on the Y
             st.write(f"Similarity to baseball: {baseball_similarity}")
