@@ -1,6 +1,6 @@
 
 # Embedding AI
-This code implements a text embedding algorithm. Embedding is a method of turning data into a standard format that can be used for search, clustering, and training nueral networks. This implementation is written in [Pure Python]() - created for Learning Purposes.
+This code implements a text embedding algorithm. Embedding is a method of turning data into a standard format that can be used for search, clustering, and training nueral networks. This implementation is written in [Pure Python](https://github.com/BrianLesko/embedding-ai/blob/main/app.py) - created for Learning Purposes.
 
 
 &nbsp;
