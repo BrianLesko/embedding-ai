@@ -7,7 +7,6 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
-import tiktoken as tk
 from sklearn.metrics.pairwise import cosine_similarity
 from customize_gui import gui
 from api_key import openai_api_key

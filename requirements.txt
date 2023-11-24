@@ -1,7 +1,5 @@
-streamlit 
-openai
-pypdf
-sentence-transformers
+numpy 
+pandas
 scikit-learn
+openai
 plotly
-```
