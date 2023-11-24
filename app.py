@@ -15,6 +15,7 @@ from openai import OpenAI
 api_key = openai_api_key
 client = OpenAI(api_key = api_key)
 gui = gui()
+import plotly.express as px
 
 def get_embedding(text, model="text-embedding-ada-002",encoding_format="float"):
     text = text.replace("\n", " ")
@@ -112,6 +113,9 @@ def main():
     gui.display_existing_messages(intro = "Hi, I'm going to help you understand what an embedding is - and why it's useful. Let's get started by entering some text to embed.")
     text = st.chat_input("Write a message")
     if text:
+        if "texts" not in st.session_state:
+                st.session_state.texts = []
+        st.session_state.texts.append(text)
         doc = document("User Input", text) # document class defined above
         with st.sidebar:
             st.markdown("""---""")
@@ -119,50 +123,31 @@ def main():
             st.write(doc.text)
             st.write("Model used: text-embedding-ada-002")
         with st.chat_message("assistant"):
-            st.write("Your text was embedded, here's the result: ")
-            st.dataframe(np.array(doc.embedding).reshape(1, -1))
-        with st.chat_message("assistant"):
-            st.markdown(f"""
-                Here's why it's useful
-                - Searching through documents.
-                - Comparing the similarity of two pieces of text.
-                - Text generation - think ChatGPT.
-                """) 
-        with st.chat_message("assistant"):
-            length = np.array(doc.embedding).shape
-            st.markdown(f"""
-                Here's how it works
-                - Each time text is embedded, the result is a vector of values that 'describe' the text.
-                - No matter the input text, the output is always the same length: {length}
-                - For this reason, text is often chunked into smaller pieces, and each piece is embedded.
-                - Similarity between two embeddings is calculated using L2 distance or cosine similarity. 
-                """)
-        with st.chat_message("assistant"):
-            if "baseball_similarities" not in st.session_state:
-                st.session_state.baseball_similarities = []
-            if "football_similarities" not in st.session_state:
-                st.session_state.football_similarities = []
+            if "soccer_similarities" not in st.session_state:
+                st.session_state.soccer_similarities = []
+            if "math_similarities" not in st.session_state:
+                st.session_state.math_similarities = []
             # Example of similarity
-            baseball = document("Baseball", "Baseball is a sport where two teams of nine players take turns batting and fielding across nine innings. Each team's goal is to score more runs while batting than the other. Fielding plays a crucial role in preventing the opposing team from scoring runs. Baseball, often referred to as America's pastime, is played on a diamond-shaped field, with bases positioned at each corner.")
-            football = document("Football", "The game is played in a series of plays or downs. There are four downs in football, and the team in possession of the ball (the offense) must advance the ball at least 10 yards within these four downs to maintain possession. If the offense fails to advance the ball the required distance, the ball is turned over to the opposing team (the defense).")
-            baseball_similarity = doc.similarity(baseball)  
-            football_similarity = doc.similarity(football)
-            st.session_state.baseball_similarities.append(baseball_similarity)
-            st.session_state.football_similarities.append(football_similarity)  
+            soccer = document("Soccer", "Eleven players per team. Kicking a ball with your feet. Attempting to score a goal against the other team. The game is 90 minutes long. This is soccer. ")
+            math = document("Math", "Using numbers doing calculations with a variety of variables to solve equations. Algebra, calculus, differential equations, geometry, and trigonometry are all types of math. How to solve problems. This is math.")
+            soccer_similarity = doc.similarity(soccer)  
+            math_similarity = doc.similarity(math)
+            st.session_state.soccer_similarities.append(soccer_similarity)
+            st.session_state.math_similarities.append(math_similarity)  
             st.markdown(f"""
-                For example, even though all this text is hard coded, I can tell you if your text input is more simialar to baseball or football.
+                Here's an example of how an embedding can be used:
                 """)
-            # plot a 2d plot of the similarity between baseball on the X and the similarity to soccer on the Y
-            st.write(f"Similarity to baseball: {baseball_similarity}")
-            st.write(f"Similarity to football: {football_similarity}")
-
-            import plotly as py
-            fig = py.graph_objs.Figure()
-            fig.add_trace(py.graph_objs.Scatter(x=st.session_state.baseball_similarities, y=st.session_state.football_similarities, mode='markers'))
+            df = pd.DataFrame({
+                'soccer_similarities': st.session_state.soccer_similarities,
+                'math_similarities': st.session_state.math_similarities,
+                'texts': st.session_state.texts
+            })
+            fig = px.scatter(df, x='soccer_similarities', y='math_similarities', hover_data=['texts'])
+            fig.update_traces(hovertemplate='Text: %{customdata[0]}<extra></extra>')
             fig.update_layout(
-                title="Similarity to Baseball vs. Similarity to Football",
-                xaxis_title="Similarity to Baseball",
-                yaxis_title="Similarity to Football",
+                title="Similarity to soccer vs. Similarity to math",
+                xaxis_title="Similarity to soccer",
+                yaxis_title="Similarity to math",
                 font=dict(
                     family="Courier New, monospace",
                     size=18,
@@ -170,6 +155,26 @@ def main():
                 )
             )
             st.plotly_chart(fig)
-            
+        
 
+
+        with st.chat_message("assistant"):
+                st.write("The embedded text looks like this: ")
+                st.dataframe(np.array(doc.embedding).reshape(1, -1))
+        with st.chat_message("assistant"):
+                st.markdown(f"""
+                    Here's why it's useful
+                    - Searching through documents.
+                    - Comparing the similarity of two pieces of text.
+                    - Text generation - think ChatGPT.
+                    """) 
+        with st.chat_message("assistant"):
+                length = np.array(doc.embedding).shape
+                st.markdown(f"""
+                    Here's how it works
+                    - Each time text is embedded, the result is a vector of values that 'describe' the text.
+                    - No matter the input text, the output is always the same length: {length}
+                    - For this reason, text is often chunked into smaller pieces, and each piece is embedded.
+                    - Similarity between two embeddings is calculated using L2 distance or cosine similarity. 
+                    """)
 main()
