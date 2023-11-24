@@ -18,6 +18,7 @@ This code uses the following libraries:
 - `scikit-learn`: for comparing the similarity of two embeddings
 - `openai`: for creating the text embeddings
 - `plotly`: for plotting
+- `tiktoken`: for tokenizing text, needed for OpenAI embeddings
 
 
 &nbsp;
