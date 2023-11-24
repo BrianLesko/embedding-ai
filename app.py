@@ -11,6 +11,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from customize_gui import gui
 from api_key import openai_api_key
 from openai import OpenAI
+import tiktoken as tk 
 api_key = openai_api_key
 client = OpenAI(api_key = api_key)
 gui = gui()
@@ -21,12 +22,6 @@ def get_embedding(text, model="text-embedding-ada-002",encoding_format="float"):
     response = client.embeddings.create(input = text, model=model)
     #st.write(response.data[0].embedding) # Debug : why the hell did OpenAI structure it like this? 
     return response.data[0].embedding
-
-@st.cache_resource
-def tokenize(text):
-    enc = tk.encoding_for_model("gpt-3.5-turbo")
-    tokens = enc.encode(text)
-    return tokens
 
 @st.cache_resource
 def chunk_tokens(tokens, chunk_length=40, chunk_overlap=10):
@@ -61,21 +56,11 @@ def augment_query(contexts, query):
     )
     return augmented_query
 
-def generate_response(augmented_query,query):
-    st.session_state.messages.append({"role": "user", "content": augmented_query})
-    response = openai.ChatCompletion.create(model="gpt-4", messages=st.session_state.messages)
-    # delete the last message from the session state, so that only the prompt and response are displayed on the next run: no context
-    st.session_state.messages.pop()
-    st.session_state.messages.append({"role": "user", "content": query})
-    msg = response.choices[0].message
-    st.session_state.messages.append(msg)
-    return msg
-
 class document:
     def __init__(self, name, text):
         self.name = name
         self.text = text
-        self.tokens = tokenize(text)
+        self.tokens = self.tokenize()
         self.token_chunks = chunk_tokens(self.tokens, chunk_length=50, chunk_overlap=10)
         self.text_chunks = [detokenize(chunk) for chunk in self.token_chunks]
         self.chunk_embeddings = embed_chunks(self.text_chunks)
@@ -104,6 +89,11 @@ class document:
     
     def similarity(self, doc):
         return cosine_similarity([self.embedding], [doc.embedding])[0][0]
+    
+    def tokenize(self):
+        enc = tk.encoding_for_model("gpt-3.5-turbo")
+        tokens = enc.encode(self.text)
+        return tokens
 
 def main():
     gui.clean_format()
