@@ -28,7 +28,7 @@ This code uses the following libraries:
 Run the following commands:
 ```
 pip install --upgrade streamlit numpy pandas scikit-learn openai plotly
-streamlit run 
+streamlit run https://github.com/BrianLesko/embedding-ai/blob/main/app.py
 ```
 
 This will start the local Streamlit server, and you can access the chatbot by opening a web browser and navigating to `http://localhost:8501`.
